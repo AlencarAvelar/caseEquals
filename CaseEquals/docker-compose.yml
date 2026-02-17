@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # Serviço do Banco de Dados
+  postgres:
+    image: postgres:15-alpine
+    container_name: equals-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=equals
+      - POSTGRES_PASSWORD=equals
+      - POSTGRES_DB=processo_seletivo
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - equals-network
+
+  # Serviço da sua Aplicação Java
+  app:
+    build: .                 # Constrói usando o Dockerfile na pasta atual
+    container_name: equals-app
+    ports:
+      - "8080:8080"          # Mapeia a porta 8080 do container para o seu PC
+    depends_on:
+      - postgres             # Espera o banco iniciar antes de tentar subir o app
+    environment:
+      # Sobrescreve as configurações do application.properties
+      # Note que usamos 'postgres' (nome do serviço acima) em vez de 'localhost'
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/processo_seletivo
+      - SPRING_DATASOURCE_USERNAME=equals
+      - SPRING_DATASOURCE_PASSWORD=equals
+    networks:
+      - equals-network
+
+volumes:
+  postgres-data:
+
+networks:
+  equals-network:

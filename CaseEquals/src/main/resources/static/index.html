@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Vendas - Equals</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #333; }
+        .section { margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        button { background-color: #28a745; color: white; padding: 10px 15px; border: none; cursor: pointer; border-radius: 4px; }
+        button:hover { background-color: #218838; }
+        input[type="date"], input[type="file"] { padding: 8px; margin-right: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Desafio Equals - Processamento de CNAB</h1>
+
+    <div class="section">
+        <h2>1. Upload do Arquivo</h2>
+        <input type="file" id="fileInput">
+        <button onclick="uploadFile()">Processar Arquivo</button>
+        <p id="uploadStatus" style="margin-top: 10px; font-weight: bold;"></p>
+    </div>
+
+    <div class="section">
+        <h2>2. Relatório de Vendas</h2>
+        <label>De: <input type="date" id="dataInicio"></label>
+        <label>Até: <input type="date" id="dataFim"></label>
+        <button onclick="carregarVendas()">Filtrar / Atualizar</button>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Loja</th>
+                <th>Data Evento</th>
+                <th>Bandeira</th>
+                <th>Valor (R$)</th>
+                <th>NSU</th>
+            </tr>
+            </thead>
+            <tbody id="tabelaCorpo">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const API_URL = '/api/transactions';
+
+    async function uploadFile() {
+        const fileInput = document.getElementById('fileInput');
+        const status = document.getElementById('uploadStatus');
+
+        if (fileInput.files.length === 0) {
+            alert("Selecione um arquivo!");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        status.innerText = "Enviando...";
+
+        try {
+            const response = await fetch(API_URL + '/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                status.innerText = "Sucesso! Arquivo processado.";
+                status.style.color = "green";
+                carregarVendas(); // Atualiza a tabela automaticamente
+            } else {
+                status.innerText = "Erro ao processar arquivo.";
+                status.style.color = "red";
+            }
+        } catch (error) {
+            status.innerText = "Erro na comunicação com o servidor.";
+            console.error(error);
+        }
+    }
+
+    async function carregarVendas() {
+        const inicio = document.getElementById('dataInicio').value;
+        const fim = document.getElementById('dataFim').value;
+        let url = API_URL;
+
+        if (inicio && fim) {
+            url += `?inicio=${inicio}&fim=${fim}`;
+        }
+
+        try {
+            const response = await fetch(url);
+            const transactions = await response.json();
+
+            const tbody = document.getElementById('tabelaCorpo');
+            tbody.innerHTML = '';
+
+            transactions.forEach(t => {
+                const row = `<tr>
+                    <td>${t.estabelecimento}</td>
+                    <td>${t.dataEvento}</td>
+                    <td>${t.bandeira}</td>
+                    <td>R$ ${t.valorTotal.toFixed(2)}</td>
+                    <td>${t.nsu}</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        } catch (error) {
+            console.error("Erro ao carregar vendas:", error);
+        }
+    }
+
+    // Carregar dados ao abrir a página
+    carregarVendas();
+</script>
+
+</body>
+</html>

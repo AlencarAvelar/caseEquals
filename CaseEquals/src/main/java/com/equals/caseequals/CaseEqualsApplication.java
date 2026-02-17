@@ -1,4 +1,4 @@
-package com.equals.CaseEquals;
+package com.equals.caseequals;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
