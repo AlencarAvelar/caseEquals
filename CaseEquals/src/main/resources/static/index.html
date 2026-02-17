@@ -106,11 +106,9 @@
 
             transactions.forEach(t => {
                 const row = `<tr>
-                    <td>${t.estabelecimento}</td>
-                    <td>${t.dataEvento}</td>
-                    <td>${t.bandeira}</td>
-                    <td>R$ ${t.valorTotal.toFixed(2)}</td>
-                    <td>${t.nsu}</td>
+                    <td>${t.loja}</td>
+                    <td>${t.dataHora}</td> <td>${t.bandeira}</td>
+                    <td>${t.valor}</td>    <td>${t.nsu}</td>
                 </tr>`;
                 tbody.innerHTML += row;
             });

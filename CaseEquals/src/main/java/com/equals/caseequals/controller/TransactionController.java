@@ -3,6 +3,8 @@ package com.equals.caseequals.controller;
 import com.equals.caseequals.model.Transaction;
 import com.equals.caseequals.repository.TransactionRepository;
 import com.equals.caseequals.service.FileProcessorService;
+import com.equals.caseequals.dto.TransactionDTO;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,16 +38,22 @@ public class TransactionController {
     // Endpoint de Listagem com Filtro
     // ATENÇÃO: Veja onde o @RequestParam está posicionado (dentro dos parênteses)
     @GetMapping
-    public List<Transaction> listAll(
+    public List<TransactionDTO> listAll(
             @RequestParam(required = false) LocalDate inicio,
             @RequestParam(required = false) LocalDate fim) {
 
+        List<Transaction> transacoesDoBanco;
+
+        // 1. Busca no Banco (Vem Entidade)
         if (inicio != null && fim != null) {
-            // Se as datas vierem na URL, filtra pelo intervalo
-            return repository.findByDataEventoBetween(inicio, fim);
+            transacoesDoBanco = repository.findByDataEventoBetween(inicio, fim);
+        } else {
+            transacoesDoBanco = repository.findAll();
         }
 
-        // Se não vierem datas, retorna tudo
-        return repository.findAll();
+        // 2. Converte para DTO (Vem JSON formatado)
+        return transacoesDoBanco.stream()
+                .map(TransactionDTO::fromEntity) // Chama o conversor que criamos
+                .collect(Collectors.toList());
     }
 }
