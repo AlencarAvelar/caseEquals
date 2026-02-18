@@ -1,7 +1,7 @@
 package com.equals.caseequals.service.parser.strategy;
 
 import com.equals.caseequals.model.Transaction;
-import com.equals.caseequals.utils.ParserUtils; // <--- Importante!
+import com.equals.caseequals.utils.ParserUtils;
 import org.springframework.stereotype.Component;
 
 @Component

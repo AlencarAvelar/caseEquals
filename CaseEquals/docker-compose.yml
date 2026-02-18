@@ -16,17 +16,17 @@ services:
     networks:
       - equals-network
 
-  # Serviço da sua Aplicação Java
+  # Serviço da Aplicação Java
   app:
     build: .                 # Constrói usando o Dockerfile na pasta atual
     container_name: equals-app
     ports:
-      - "8080:8080"          # Mapeia a porta 8080 do container para o seu PC
+      - "8080:8080"          # Mapeia a porta 8080 do container para 8080 do PC
     depends_on:
       - postgres             # Espera o banco iniciar antes de tentar subir o app
     environment:
       # Sobrescreve as configurações do application.properties
-      # Note que usamos 'postgres' (nome do serviço acima) em vez de 'localhost'
+      # Usamos 'postgres' (nome do serviço acima) em vez de 'localhost'
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/processo_seletivo
       - SPRING_DATASOURCE_USERNAME=equals
       - SPRING_DATASOURCE_PASSWORD=equals
