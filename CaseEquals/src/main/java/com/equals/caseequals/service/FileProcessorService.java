@@ -5,6 +5,7 @@ import com.equals.caseequals.repository.TransactionRepository;
 import com.equals.caseequals.service.parser.strategy.PaymentStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.equals.caseequals.exception.FileProcessingException;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -44,18 +45,17 @@ public class FileProcessorService {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Erro ao processar arquivo: " + e.getMessage());
+            throw new FileProcessingException("Erro ao processar arquivo: " + e.getMessage(), e);
         }
     }
 
-    // AQUI ESTAVA O PROBLEMA: Este método precisa ter a lógica!
+
     private void processDetailLine(String line) {
         try {
-            // 1. Identifica a bandeira (Posição 262 a 291 no PDF -> 261 a 291 no Java)
+            // 1. Identifica a bandeira (Posição 262 a 291 no arquivo -> 261 a 291 no Java)
             // Se o arquivo for menor que isso, vai dar erro, por isso o try/catch
             if (line.length() < 291) {
-                System.out.println("ERRO: Linha muito curta para conter a bandeira. Tamanho: " + line.length());
-                return;
+                throw new FileProcessingException("Linha inválida ou corrompida (tamanho incorreto).");
             }
 
             String rawBrand = line.substring(261, 291);
@@ -65,7 +65,7 @@ public class FileProcessorService {
             PaymentStrategy strategy = strategies.stream()
                     .filter(s -> s.appliesTo(rawBrand))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Nenhuma estratégia encontrada para a bandeira: " + rawBrand));
+                    .orElseThrow(() -> new FileProcessingException("Bandeira não suportada: " + rawBrand));
 
             // 3. Processa e Salva
             Transaction transaction = strategy.processLine(line);
@@ -74,8 +74,7 @@ public class FileProcessorService {
             System.out.println("Venda salva com sucesso! ID: " + transaction.getId());
 
         } catch (Exception e) {
-            System.err.println("Erro ao salvar linha: " + e.getMessage());
-            e.printStackTrace(); // Ajuda a ver onde falhou
+            throw new FileProcessingException("Erro ao salvar linha: " + e.getMessage(), e);
+        }
         }
     }
-}

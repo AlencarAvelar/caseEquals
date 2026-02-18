@@ -27,16 +27,18 @@ public class TransactionController {
     // Endpoint de Upload
     @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+        // Se der erro, o GlobalExceptionHandler pega automaticamente.
         try {
             fileProcessorService.processFile(file.getInputStream());
             return ResponseEntity.ok("Arquivo processado com sucesso!");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Erro ao processar arquivo: " + e.getMessage());
+        } catch (java.io.IOException e) {
+            // converte erro de IO para nossa exceção
+            throw new com.equals.caseequals.exception.FileProcessingException("Erro de leitura do arquivo upload", e);
         }
     }
 
     // Endpoint de Listagem com Filtro
-    // ATENÇÃO: Veja onde o @RequestParam está posicionado (dentro dos parênteses)
+
     @GetMapping
     public List<TransactionDTO> listAll(
             @RequestParam(required = false) LocalDate inicio,
@@ -44,16 +46,16 @@ public class TransactionController {
 
         List<Transaction> transacoesDoBanco;
 
-        // 1. Busca no Banco (Vem Entidade)
+        // 1. Busca no Banco
         if (inicio != null && fim != null) {
             transacoesDoBanco = repository.findByDataEventoBetween(inicio, fim);
         } else {
             transacoesDoBanco = repository.findAll();
         }
 
-        // 2. Converte para DTO (Vem JSON formatado)
+        // 2. Converte para DTO
         return transacoesDoBanco.stream()
-                .map(TransactionDTO::fromEntity) // Chama o conversor que criamos
+                .map(TransactionDTO::fromEntity) // Chama o conversor
                 .collect(Collectors.toList());
     }
 }

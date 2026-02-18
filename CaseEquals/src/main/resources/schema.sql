@@ -1,3 +1,5 @@
+
+-- explica como e feita a criacao das tabelas no postgre utilizando o JPA
 CREATE TABLE IF NOT EXISTS transacoes (
     id SERIAL PRIMARY KEY,
     estabelecimento VARCHAR(10) NOT NULL,
