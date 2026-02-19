@@ -3,121 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório de Vendas - Equals</title>
+    <title>Desafio Equals - Relatório Completo (Homologação)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
-        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h1, h2 { color: #333; }
-        .section { margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
-        th { background-color: #007bff; color: white; }
-        button { background-color: #28a745; color: white; padding: 10px 15px; border: none; cursor: pointer; border-radius: 4px; }
-        button:hover { background-color: #218838; }
-        input[type="date"], input[type="file"] { padding: 8px; margin-right: 10px; }
+        body { background-color: #f8f9fa; padding: 20px; }
+        .card { margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
+        /* Configuração da Barra de Rolagem e Tabela */
+        .table-responsive {
+            max-height: 700px; /* Altura máxima vertical */
+            overflow-y: auto;
+            overflow-x: auto;  /* Barra de rolagem horizontal */
+            border: 1px solid #dee2e6;
+        }
+
+        /* Cabeçalho Fixo */
+        thead th {
+            position: sticky;
+            top: 0;
+            background-color: #0d6efd;
+            color: white;
+            z-index: 10;
+            white-space: nowrap; /* Não quebra linha no cabeçalho */
+            font-size: 0.85rem;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        /* Células da Tabela */
+        td {
+            white-space: nowrap; /* Força a tabela a crescer horizontalmente */
+            font-size: 0.8rem;
+            vertical-align: middle;
+            padding: 4px 8px !important; /* Mais compacto */
+        }
+
+        /* Estilos específicos */
+        .money { text-align: right; font-weight: bold; color: #198754; }
+        .tax { text-align: right; color: #dc3545; }
+        .id-col { background-color: #e9ecef; font-weight: bold; }
+
+        .success-msg { color: green; font-weight: bold; margin-top: 10px; }
+        .error-msg { color: red; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Desafio Equals - Processamento de CNAB</h1>
+<div class="container-fluid">
+    <h3 class="mb-4">Desafio Equals - Homologação de Arquivo CNAB</h3>
 
-    <div class="section">
-        <h2>1. Upload do Arquivo</h2>
-        <input type="file" id="fileInput">
-        <button onclick="uploadFile()">Processar Arquivo</button>
-        <p id="uploadStatus" style="margin-top: 10px; font-weight: bold;"></p>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">1. Upload do Arquivo</h5>
+            <form id="uploadForm" class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <input type="file" class="form-control" id="fileInput" accept=".txt" required>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-success">Processar Arquivo</button>
+                </div>
+                <div class="col-auto">
+                    <span id="uploadStatus"></span>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <div class="section">
-        <h2>2. Relatório de Vendas</h2>
-        <label>De: <input type="date" id="dataInicio"></label>
-        <label>Até: <input type="date" id="dataFim"></label>
-        <button onclick="carregarVendas()">Filtrar / Atualizar</button>
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title m-0">2. Relatório Detalhado (Todas as Colunas)</h5>
+                <div class="d-flex gap-2 align-items-center">
+                    <label>Filtro de Data:</label>
+                    <input type="date" id="dataInicio" class="form-control form-control-sm">
+                    <span>até</span>
+                    <input type="date" id="dataFim" class="form-control form-control-sm">
+                    <button onclick="carregarVendas()" class="btn btn-primary btn-sm">Atualizar</button>
+                </div>
+            </div>
 
-        <table>
-            <thead>
-            <tr>
-                <th>Loja</th>
-                <th>Data Evento</th>
-                <th>Bandeira</th>
-                <th>Valor (R$)</th>
-                <th>NSU</th>
-            </tr>
-            </thead>
-            <tbody id="tabelaCorpo">
-            </tbody>
-        </table>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-bordered table-sm">
+                    <thead class="table-dark">
+                    <tr>
+                        <th colspan="3" class="bg-secondary">Identificação</th>
+                        <th colspan="4" class="bg-secondary">Datas e Horas</th>
+                        <th colspan="4" class="bg-secondary">Financeiro (Valores)</th>
+                        <th colspan="7" class="bg-secondary">Taxas e Tarifas</th>
+                        <th colspan="4" class="bg-secondary">Parcelamento</th>
+                        <th colspan="5" class="bg-secondary">Detalhes Técnicos</th>
+                        <th colspan="7" class="bg-secondary">Captura e Cartão</th>
+                    </tr>
+                    <tr>
+                        <th>ID Banco</th>
+                        <th>Loja</th>
+                        <th>NSU</th>
+
+                        <th>Dt. Transação</th>
+                        <th>Dt. Evento</th>
+                        <th>Hora</th>
+                        <th>Prev. Pagto</th>
+
+                        <th>Vlr. Total</th>
+                        <th>Vlr. Líquido</th>
+                        <th>Vlr. Original</th>
+                        <th>Vlr. Líq Trans</th>
+
+                        <th>Tx Parc Comp</th>
+                        <th>Tar Bol Comp</th>
+                        <th>Tx Parc Vend</th>
+                        <th>Tx Intermed</th>
+                        <th>Tar Intermed</th>
+                        <th>Tar Bol Vend</th>
+                        <th>Repasse App</th>
+
+                        <th>Ind. Pagto</th>
+                        <th>Plano</th>
+                        <th>Parc</th>
+                        <th>Qtd</th>
+
+                        <th>Tp Evento</th>
+                        <th>Tp Trans</th>
+                        <th>Série Leitor</th>
+                        <th>Cód Trans</th>
+                        <th>Cód Pedido</th>
+
+                        <th>Status</th>
+                        <th>Meio Pagto</th>
+                        <th>Bandeira</th>
+                        <th>Canal</th>
+                        <th>Leitor</th>
+                        <th>Captura</th>
+                        <th>Num Lógico</th>
+                        <th>Bin</th>
+                        <th>Holder</th>
+                        <th>Auth</th>
+                        <th>CV</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tabelaVendas">
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-2 text-muted small">
+                * Utilize a barra de rolagem horizontal para ver todas as 40+ colunas.
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    const API_URL = '/api/transactions';
+    const API_URL = 'http://localhost:8080/api/transactions';
 
-    async function uploadFile() {
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
         const fileInput = document.getElementById('fileInput');
-        const status = document.getElementById('uploadStatus');
+        const statusDiv = document.getElementById('uploadStatus');
 
-        if (fileInput.files.length === 0) {
-            alert("Selecione um arquivo!");
-            return;
-        }
+        if(fileInput.files.length === 0) return;
 
         const formData = new FormData();
-        formData.append("file", fileInput.files[0]);
+        formData.append('file', fileInput.files[0]);
 
-        status.innerText = "Enviando...";
+        statusDiv.innerHTML = "Processando...";
+        statusDiv.className = "";
 
         try {
-            const response = await fetch(API_URL + '/upload', {
-                method: 'POST',
-                body: formData
-            });
-
+            const response = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
             if (response.ok) {
-                status.innerText = "Sucesso! Arquivo processado.";
-                status.style.color = "green";
-                carregarVendas(); // Atualiza a tabela automaticamente
+                statusDiv.innerText = "Sucesso!";
+                statusDiv.className = "success-msg";
+                carregarVendas();
             } else {
-                status.innerText = "Erro ao processar arquivo.";
-                status.style.color = "red";
+                const text = await response.text();
+                statusDiv.innerText = "Erro: " + text;
+                statusDiv.className = "error-msg";
             }
         } catch (error) {
-            status.innerText = "Erro na comunicação com o servidor.";
-            console.error(error);
+            statusDiv.innerText = "Erro de conexão.";
+            statusDiv.className = "error-msg";
         }
-    }
+    });
 
     async function carregarVendas() {
         const inicio = document.getElementById('dataInicio').value;
         const fim = document.getElementById('dataFim').value;
         let url = API_URL;
 
-        if (inicio && fim) {
-            url += `?inicio=${inicio}&fim=${fim}`;
-        }
+        if (inicio && fim) url += `?inicio=${inicio}&fim=${fim}`;
 
         try {
             const response = await fetch(url);
             const transactions = await response.json();
-
-            const tbody = document.getElementById('tabelaCorpo');
+            const tbody = document.getElementById('tabelaVendas');
             tbody.innerHTML = '';
+
+            if (transactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="45" class="text-center p-4">Nenhum registro encontrado.</td></tr>';
+                return;
+            }
 
             transactions.forEach(t => {
                 const row = `<tr>
-                    <td>${t.loja}</td>
-                    <td>${t.dataHora}</td> <td>${t.bandeira}</td>
-                    <td>${t.valor}</td>    <td>${t.nsu}</td>
+                    <td class="id-col">${t.id}</td>
+                    <td>${t.estabelecimento}</td>
+                    <td>${t.nsu}</td>
+
+                    <td>${t.dataTransacao}</td>
+                    <td>${t.dataEvento}</td>
+                    <td>${t.horaEvento}</td>
+                    <td>${t.dataPrevistaPagamento}</td>
+
+                    <td class="money">${t.valorTotal}</td>
+                    <td class="money">${t.valorLiquido}</td>
+                    <td class="money">${t.valorOriginal}</td>
+                    <td class="money">${t.valorLiquidoTransacao}</td>
+
+                    <td class="tax">${t.taxaParcelamentoComprador}</td>
+                    <td class="tax">${t.tarifaBoletoComprador}</td>
+                    <td class="tax">${t.taxaParcelamentoVendedor}</td>
+                    <td class="tax">${t.taxaIntermediacao}</td>
+                    <td class="tax">${t.tarifaIntermediacao}</td>
+                    <td class="tax">${t.tarifaBoletoVendedor}</td>
+                    <td class="tax">${t.repasseAplicacao}</td>
+
+                    <td>${t.indicadorPagamento}</td>
+                    <td>${t.plano}</td>
+                    <td>${t.parcela}</td>
+                    <td>${t.qtdParcelas}</td>
+
+                    <td>${t.tipoEvento}</td>
+                    <td>${t.tipoTransacao}</td>
+                    <td>${t.numeroSerieLeitor}</td>
+                    <td>${t.codigoTransacao}</td>
+                    <td>${t.codigoPedido}</td>
+
+                    <td>${t.statusPagamento}</td>
+                    <td>${t.meioPagamento}</td>
+                    <td><strong>${t.bandeira}</strong></td>
+                    <td>${t.canalEntrada}</td>
+                    <td>${t.leitor}</td>
+                    <td>${t.meioCaptura}</td>
+                    <td>${t.numeroLogico}</td>
+                    <td>${t.cartaoBin}</td>
+                    <td>${t.cartaoHolder}</td>
+                    <td>${t.codigoAutorizacao}</td>
+                    <td>${t.codigoCV}</td>
                 </tr>`;
                 tbody.innerHTML += row;
             });
         } catch (error) {
-            console.error("Erro ao carregar vendas:", error);
+            console.error(error);
+            alert("Erro ao buscar dados.");
         }
     }
 
-    // Carregar dados ao abrir a página
+    // Carregar inicial
     carregarVendas();
 </script>
 

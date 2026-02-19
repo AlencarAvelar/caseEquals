@@ -1,52 +1,70 @@
 package com.equals.caseequals.model;
 
 import jakarta.persistence.*;
-import lombok.Data; // O Lombok gera Getters, Setters, toString, etc. automaticamente
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
+import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-@Data // Gera getters, setters, equals, hashcode e toString
-@NoArgsConstructor // Gera construtor vazio (obrigatório para JPA)
-@AllArgsConstructor // Gera construtor com todos os argumentos
-@Entity // Indica que essa classe é uma tabela no banco
-@Table(name = "transacoes") // Define o nome da tabela no PostgreSQL
+@Data
+@Entity
+@Table(name = "transacoes")
 public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Layout: Posição 2, Tam 10
-    @Column(nullable = false, length = 10)
-    private String estabelecimento;
+    // --- Identificação ---
+    private String estabelecimento; // Pos 2-11
+    private String nsu;             // Pos 330-340
 
-    // Layout: Posição 12, Tam 8 (AAAAMMDD)
-    @Column(name = "data_transacao", nullable = false)
-    private LocalDate dataTransacao; // Mapeado de "Data inicial da transação"
+    // --- Datas e Horas ---
+    private LocalDate dataTransacao;      // Pos 12-19
+    private LocalDate dataEvento;         // Pos 20-27
+    private LocalTime horaEvento;         // Pos 28-33
+    private LocalDate dataPrevistaPagamento; // Pos 131-138
 
-    // Layout: Posição 20, Tam 8 (AAAAMMDD)
-    @Column(name = "data_evento", nullable = false)
-    private LocalDate dataEvento; // Mapeado de "Data do evento"
+    // --- Valores (Dinheiro) ---
+    private BigDecimal valorTotal;              // Pos 98-110
+    private BigDecimal valorParcelaOuLiquido;   // Pos 111-123
+    private BigDecimal valorOriginal;           // Pos 165-177
+    private BigDecimal valorLiquidoTransacao;   // Pos 243-255
 
-    // Layout: Posição 28, Tam 6 (HHMMSS)
-    @Column(name = "hora_evento", nullable = false)
-    private LocalTime horaEvento;
+    // --- Taxas e Tarifas ---
+    private BigDecimal taxaParcelamentoComprador; // Pos 139-151
+    private BigDecimal tarifaBoletoComprador;     // Pos 152-164
+    private BigDecimal taxaParcelamentoVendedor;  // Pos 178-190
+    private BigDecimal taxaIntermediacao;         // Pos 191-203
+    private BigDecimal tarifaIntermediacao;       // Pos 204-216
+    private BigDecimal tarifaBoletoVendedor;      // Pos 217-229
+    private BigDecimal repasseAplicacao;          // Pos 230-242
 
-    // Layout: Posição 98, Tam 13
-    // Usamos BigDecimal para evitar erros de arredondamento financeiro
-    @Column(name = "valor_total", nullable = false, precision = 13, scale = 2)
-    private BigDecimal valorTotal;
+    // --- Detalhes da Venda ---
+    private String tipoEvento;      // Pos 34-35
+    private String tipoTransacao;   // Pos 36-37
+    private String numeroSerieLeitor; // Pos 38-45
+    private String codigoTransacao;   // Pos 46-77
+    private String codigoPedido;      // Pos 78-97
 
-    // Layout: Posição 262, Tam 30
-    @Column(nullable = false, length = 30)
-    private String bandeira;
+    // --- Parcelamento ---
+    private String indicadorPagamento; // Pos 124
+    private String plano;              // Pos 125-126
+    private String parcela;            // Pos 127-128
+    private Integer qtdParcelas;       // Pos 129-130
 
-    // Layout: Posição 330, Tam 11
-    // NSU = Número Sequencial Único
-    @Column(length = 11)
-    private String nsu;
+    // --- Status e Captura ---
+    private String statusPagamento; // Pos 256-257
+    private String meioPagamento;   // Pos 260-261
+    private String bandeira;        // Pos 262-291
+    private String canalEntrada;    // Pos 292-293
+    private String leitor;          // Pos 294-295
+    private String meioCaptura;     // Pos 296-297
+    private String numeroLogico;    // Pos 298-329
+
+    // --- Dados do Cartão ---
+    private String cartaoBin;       // Pos 344-349
+    private String cartaoHolder;    // Pos 350-353
+    private String codigoAutorizacao; // Pos 354-359
+    private String codigoCV;        // Pos 360-391
 }
