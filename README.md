@@ -1,4 +1,4 @@
-# Desafio Técnico Equals - Processador de Transações 
+# Desafio Técnico Equals - Processador de Transações
 
 Este projeto é uma solução robusta para processamento de arquivos de transações financeiras (layout posicional), persistência em banco de dados relacional e visualização via relatório web.
 
@@ -36,11 +36,20 @@ Utilização de `@ControllerAdvice` e `@ExceptionHandler`.
 
 ---
 
-## 🌟 Funcionalidades 
+## 🌟 Funcionalidades
 
 * **Mapeamento Completo (Homologação):** Diferente de uma extração básica, o parser foi configurado para ler e persistir todos os campos do Registro Tipo 1 (Detalhe), incluindo taxas, tarifas, dados de parcelamento e segurança (BIN/CV), permitindo uma auditoria completa do arquivo.
-* **Filtros Dinâmicos (JPQL):** O relatório permite filtrar as transações por **Período (Data)** e por **Bandeira (Visa/Mastercard)**, podendo ser usados em conjunto ou isoladamente.
+* **Filtros Dinâmicos:** O relatório permite filtrar as transações pela **Previsão de Pagamento** e por **Bandeira (Visa/Mastercard)**, podendo ser usados em conjunto ou isoladamente. Isso permite análises mais ricas, já que a data de evento costuma ser a mesma para o lote todo, enquanto a previsão de pagamento varia conforme as parcelas.
 * **Tabela Responsiva:** Interface adaptada com barra de rolagem horizontal nativa para visualização confortável de todos os dados extraídos.
+
+---
+
+## ⚡ Otimizações de Performance
+
+Para garantir que a aplicação se mantenha rápida e responsiva mesmo ao processar e exibir um grande volume de dados, foram aplicadas as seguintes otimizações técnicas:
+
+* **Backend (Indexação no Banco de Dados):** Foram criados Índices (`@Index`) nas colunas `data_prevista_pagamento` e `bandeira` no PostgreSQL. Isso elimina a necessidade de *Table Scans* (leitura linha a linha) durante os filtros, garantindo buscas quase instantâneas.
+* **Frontend (Manipulação Eficiente do DOM):** Ao invés de forçar o navegador a redesenhar a tabela a cada nova linha inserida (o que causaria congelamento da tela), o Javascript processa todas as transações em memória e realiza **uma única atualização do DOM** ao final. Isso permite carregar centenas de registros com dezenas de colunas de forma totalmente fluida.
 
 ---
 
@@ -55,7 +64,7 @@ A aplicação é "Dockerizada", o que significa que você **não precisa** ter J
 
 1.  **Clone o repositório** (ou extraia os arquivos):
     ```bash
-    git clone https://github.com/AlencarAvelar/caseEquals.git
+    git clone [https://github.com/AlencarAvelar/caseEquals.git](https://github.com/AlencarAvelar/caseEquals.git)
     cd CaseEquals
     ```
 
@@ -73,7 +82,7 @@ A aplicação é "Dockerizada", o que significa que você **não precisa** ter J
 ## 🧪 Como Testar
 
 1.  **Upload:**
-    * Na tela inicial, realize o upload do arquivo de exemplo `processoSeletivoEquals.txt` 
+    * Na tela inicial, realize o upload do arquivo de exemplo `processoSeletivoEquals.txt`
 2.  **Relatório e Filtros:**
     * Após o upload, a tabela será carregada com todas as colunas detalhadas.
     * Utilize os campos **"De", "Até"** e **"Bandeira"** para buscar transações específicas e clique em "Atualizar".
@@ -88,15 +97,16 @@ A API RESTful responde nos seguintes endpoints:
 * **Método:** `POST` | **URL:** `/api/transactions/upload`
 * **Content-Type:** `multipart/form-data`
 * **Parâmetro (Body):** `file` (Arquivo .txt obrigatório)
+* **Resposta (200 OK):** Retorna a quantidade de transações efetivamente salvas.
 
 ### 2. Listar Transações (Com Filtros)
 * **Método:** `GET` | **URL:** `/api/transactions`
 * **Query Params (Opcionais):**
-    * `inicio`: Data de início (`yyyy-MM-dd`).
-    * `fim`: Data final (`yyyy-MM-dd`).
+    * `inicio`: Data inicial para a **Previsão de Pagamento** (`yyyy-MM-dd`).
+    * `fim`: Data final para a **Previsão de Pagamento** (`yyyy-MM-dd`).
     * `bandeira`: Nome da bandeira (`VISA` ou `MASTERCARD`).
 * **Exemplo de Chamada:**
-  `GET /api/transactions?inicio=2018-09-25&bandeira=VISA`
+  `GET /api/transactions?inicio=2018-10-25&bandeira=VISA`
 
 ---
 
