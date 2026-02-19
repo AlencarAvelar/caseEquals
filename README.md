@@ -63,6 +63,7 @@ Para garantir que a aplicação se mantenha rápida e responsiva mesmo ao proces
 1.  **Clone o repositório** :
     ```bash
     git clone https://github.com/AlencarAvelar/caseEquals.git
+    cd caseEquals
     cd CaseEquals
     ```
 
