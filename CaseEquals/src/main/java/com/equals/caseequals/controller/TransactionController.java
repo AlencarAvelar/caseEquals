@@ -42,20 +42,16 @@ public class TransactionController {
     @GetMapping
     public List<TransactionDTO> listAll(
             @RequestParam(required = false) LocalDate inicio,
-            @RequestParam(required = false) LocalDate fim) {
+            @RequestParam(required = false) LocalDate fim,
+            @RequestParam(required = false) String bandeira) { // <--- Novo parâmetro
 
-        List<Transaction> transacoesDoBanco;
+        // Chama o método inteligente do repositório
+        // Se a bandeira vier vazia, o SQL vai ignorar ela
+        List<Transaction> transactions = repository.findByFilters(inicio, fim, bandeira);
 
-        // 1. Busca no Banco
-        if (inicio != null && fim != null) {
-            transacoesDoBanco = repository.findByDataEventoBetween(inicio, fim);
-        } else {
-            transacoesDoBanco = repository.findAll();
-        }
-
-        // 2. Converte para DTO
-        return transacoesDoBanco.stream()
-                .map(TransactionDTO::fromEntity) // Chama o conversor
+        // Converte para DTO e retorna
+        return transactions.stream()
+                .map(TransactionDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 }

@@ -78,7 +78,18 @@
                     <input type="date" id="dataInicio" class="form-control form-control-sm">
                     <span>até</span>
                     <input type="date" id="dataFim" class="form-control form-control-sm">
-                    <button onclick="carregarVendas()" class="btn btn-primary btn-sm">Atualizar</button>
+                    <button onclick="carregarVendas()" class="btn btn-primary btn-sm">Filtrar</button>
+
+
+
+                    <label class="ms-2">Bandeira:</label>
+                    <select id="filtroBandeira" class="form-select form-select-sm" style="width: 150px;">
+                        <option value="">Todas</option>
+                        <option value="MASTERCARD">Mastercard</option>
+                        <option value="VISA">Visa</option>
+                    </select>
+
+                    <button onclick="carregarVendas()" class="btn btn-primary btn-sm">Filtrar</button>
                 </div>
             </div>
 
@@ -188,9 +199,16 @@
     async function carregarVendas() {
         const inicio = document.getElementById('dataInicio').value;
         const fim = document.getElementById('dataFim').value;
-        let url = API_URL;
+        const bandeira = document.getElementById('filtroBandeira').value; // <--- Pega o valor
 
-        if (inicio && fim) url += `?inicio=${inicio}&fim=${fim}`;
+        // Monta a URL com Query Params dinamicamente
+        const params = new URLSearchParams();
+        if (inicio) params.append('inicio', inicio);
+        if (fim) params.append('fim', fim);
+        if (bandeira) params.append('bandeira', bandeira); // <--- Adiciona na URL
+
+        // A URL final será algo como: /api/transactions?inicio=...&bandeira=VISA
+        const url = `${API_URL}?${params.toString()}`;
 
         try {
             const response = await fetch(url);
@@ -199,26 +217,25 @@
             tbody.innerHTML = '';
 
             if (transactions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="45" class="text-center p-4">Nenhum registro encontrado.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="45" class="text-center p-4">Nenhum registro encontrado para os filtros selecionados.</td></tr>';
                 return;
             }
 
             transactions.forEach(t => {
+                // ... (Mantenha o código de criação das linhas <tr> exatamente como estava) ...
+                // DICA: Copie o conteúdo do `forEach` do código anterior para não perder as 40 colunas
                 const row = `<tr>
                     <td class="id-col">${t.id}</td>
                     <td>${t.estabelecimento}</td>
                     <td>${t.nsu}</td>
-
                     <td>${t.dataTransacao}</td>
                     <td>${t.dataEvento}</td>
                     <td>${t.horaEvento}</td>
                     <td>${t.dataPrevistaPagamento}</td>
-
                     <td class="money">${t.valorTotal}</td>
                     <td class="money">${t.valorLiquido}</td>
                     <td class="money">${t.valorOriginal}</td>
                     <td class="money">${t.valorLiquidoTransacao}</td>
-
                     <td class="tax">${t.taxaParcelamentoComprador}</td>
                     <td class="tax">${t.tarifaBoletoComprador}</td>
                     <td class="tax">${t.taxaParcelamentoVendedor}</td>
@@ -226,18 +243,15 @@
                     <td class="tax">${t.tarifaIntermediacao}</td>
                     <td class="tax">${t.tarifaBoletoVendedor}</td>
                     <td class="tax">${t.repasseAplicacao}</td>
-
                     <td>${t.indicadorPagamento}</td>
                     <td>${t.plano}</td>
                     <td>${t.parcela}</td>
                     <td>${t.qtdParcelas}</td>
-
                     <td>${t.tipoEvento}</td>
                     <td>${t.tipoTransacao}</td>
                     <td>${t.numeroSerieLeitor}</td>
                     <td>${t.codigoTransacao}</td>
                     <td>${t.codigoPedido}</td>
-
                     <td>${t.statusPagamento}</td>
                     <td>${t.meioPagamento}</td>
                     <td><strong>${t.bandeira}</strong></td>
