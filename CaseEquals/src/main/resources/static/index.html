@@ -216,14 +216,17 @@
             const tbody = document.getElementById('tabelaVendas');
             tbody.innerHTML = '';
 
+            // ... (código anterior)
             if (transactions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="45" class="text-center p-4">Nenhum registro encontrado para os filtros selecionados.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="45" class="text-center p-4">Nenhum registro encontrado.</td></tr>';
                 return;
             }
 
-            transactions.forEach(t => {
+            // NOVA ESTRATÉGIA: Criar uma variável de texto vazia
+            let linhasHtml = '';
 
-                const row = `<tr>
+            transactions.forEach(t => {
+                linhasHtml += `<tr>
                     <td class="id-col">${t.id}</td>
                     <td>${t.estabelecimento}</td>
                     <td>${t.nsu}</td>
@@ -263,9 +266,13 @@
                     <td>${t.codigoAutorizacao}</td>
                     <td>${t.codigoCV}</td>
                 </tr>`;
-                tbody.innerHTML += row;
             });
+
+            // Desenha a tabela de uma vez só no final!
+            tbody.innerHTML = linhasHtml;
+
         } catch (error) {
+            // ... (resto do código)
             console.error(error);
             alert("Erro ao buscar dados.");
         }
