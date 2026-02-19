@@ -50,7 +50,7 @@
 <body>
 
 <div class="container-fluid">
-    <h3 class="mb-4">Desafio Equals - Homologação de Arquivo CNAB</h3>
+    <h3 class="mb-4">Desafio Equals - Homologação de Arquivo </h3>
 
     <div class="card">
         <div class="card-body">
@@ -72,7 +72,7 @@
     <div class="card">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="card-title m-0">2. Relatório Detalhado (Todas as Colunas)</h5>
+                <h5 class="card-title m-0">2. Relatório</h5>
                 <div class="d-flex gap-2 align-items-center">
                     <label>Filtro de Data:</label>
                     <input type="date" id="dataInicio" class="form-control form-control-sm">
@@ -222,8 +222,7 @@
             }
 
             transactions.forEach(t => {
-                // ... (Mantenha o código de criação das linhas <tr> exatamente como estava) ...
-                // DICA: Copie o conteúdo do `forEach` do código anterior para não perder as 40 colunas
+
                 const row = `<tr>
                     <td class="id-col">${t.id}</td>
                     <td>${t.estabelecimento}</td>

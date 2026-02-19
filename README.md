@@ -13,7 +13,7 @@ A aplicação foi desenvolvida com foco em **Extensibilidade**, **Clean Code** e
 * **Banco de Dados:** PostgreSQL 15
 * **Infraestrutura:** Docker & Docker Compose
 * **Build Tool:** Maven
-* **Frontend:** HTML5, CSS3 e Javascript (Vanilla)
+* **Frontend:** HTML5, CSS3, Bootstrap 5 e Javascript (Vanilla)
 
 ---
 
@@ -28,18 +28,19 @@ Utilizado para o processamento das linhas do arquivo.
 
 ### 2. DTO (Data Transfer Object)
 Utilizado para desacoplar a camada de persistência da camada de apresentação.
-* **Objetivo:** A entidade `Transaction` reflete o banco de dados. O `TransactionDTO` reflete o que a tela precisa ver.
-* **Benefício:** Permite formatar dados (ex: converter `BigDecimal` para String `R$ 100,00` ou datas para `dd/MM/yyyy`) sem poluir a entidade de domínio e sem expor a estrutura interna do banco.
+* **Objetivo:** A entidade `Transaction` reflete o banco de dados. O `TransactionDTO` reflete o que a tela precisa ver, aplicando formatações de data (`dd/MM/yyyy`) e moeda (`R$ 0,00`).
 
 ### 3. Global Exception Handling
 Utilização de `@ControllerAdvice` e `@ExceptionHandler`.
-* **Objetivo:** Centralizar o tratamento de erros.
-* **Benefício:** Evita blocos `try-catch` repetitivos nos Controllers e garante que o cliente (API/Frontend) receba mensagens de erro padronizadas e amigáveis (ex: HTTP 400 com mensagem clara).
+* **Objetivo:** Centralizar o tratamento de erros, garantindo que o cliente (API/Frontend) receba mensagens padronizadas (ex: HTTP 400 em caso de arquivo inválido).
 
-### 4. Utility Class
-Criação da classe `ParserUtils`.
-* **Objetivo:** Centralizar lógicas repetitivas de conversão (String para Data, String para Moeda).
-* **Benefício:** Aplica o princípio DRY (Don't Repeat Yourself). Se o formato da data mudar no arquivo, alteramos em apenas um lugar.
+---
+
+## 🌟 Funcionalidades 
+
+* **Mapeamento Completo (Homologação):** Diferente de uma extração básica, o parser foi configurado para ler e persistir todos os campos do Registro Tipo 1 (Detalhe), incluindo taxas, tarifas, dados de parcelamento e segurança (BIN/CV), permitindo uma auditoria completa do arquivo.
+* **Filtros Dinâmicos (JPQL):** O relatório permite filtrar as transações por **Período (Data)** e por **Bandeira (Visa/Mastercard)**, podendo ser usados em conjunto ou isoladamente.
+* **Tabela Responsiva:** Interface adaptada com barra de rolagem horizontal nativa para visualização confortável de todos os dados extraídos.
 
 ---
 
@@ -48,7 +49,7 @@ Criação da classe `ParserUtils`.
 A aplicação é "Dockerizada", o que significa que você **não precisa** ter Java ou PostgreSQL instalados na sua máquina local. Apenas o Docker é necessário.
 
 ### Pré-requisitos
-* [Docker](https://www.docker.com/)  instalado.
+* [Docker](https://www.docker.com/) e Docker Compose instalados.
 
 ### Passo a Passo
 
@@ -59,89 +60,51 @@ A aplicação é "Dockerizada", o que significa que você **não precisa** ter J
     ```
 
 2.  **Suba a aplicação com Docker Compose:**
-    Este comando irá compilar o projeto Java (dentro do container), baixar a imagem do Postgres e iniciar ambos.
     ```bash
     docker-compose up --build
     ```
     *Aguarde alguns instantes até aparecer a mensagem no terminal: `Started CaseEqualsApplication`.*
 
 3.  **Acesse a Aplicação:**
-    Abra o navegador e vá para:
-    **[http://localhost:8080](http://localhost:8080)**
+    Abra o navegador e vá para: **[http://localhost:8080](http://localhost:8080)**
 
 ---
 
 ## 🧪 Como Testar
 
 1.  **Upload:**
-    * Na tela inicial, clique em "Escolher Arquivo".
-    * Selecione o arquivo de exemplo `processoSeletivoEquals.txt` (disponível em `src/main/resources`).
-    * Clique em "Processar Arquivo".
-
-2.  **Relatório:**
-    * Após o processamento, a tabela será carregada com as transações.
-    * **Filtros:** Utilize os campos de data "De" e "Até" e clique em "Filtrar / Atualizar" para buscar transações por período (ex: 2018-09-25).
+    * Na tela inicial, realize o upload do arquivo de exemplo `processoSeletivoEquals.txt` 
+2.  **Relatório e Filtros:**
+    * Após o upload, a tabela será carregada com todas as colunas detalhadas.
+    * Utilize os campos **"De", "Até"** e **"Bandeira"** para buscar transações específicas e clique em "Atualizar".
 
 ---
+
 ## 🔌 Documentação da API (Endpoints)
 
-A aplicação segue o padrão RESTful. O Frontend se comunica com o Backend através das seguintes chamadas:
+A API RESTful responde nos seguintes endpoints:
 
 ### 1. Upload de Arquivo
-Endpoint responsável por receber o arquivo, identificar a bandeira (Strategy Pattern), tratar os dados e persistir no PostgreSQL.
-
-* **Método:** `POST`
-* **URL:** `/api/transactions/upload`
+* **Método:** `POST` | **URL:** `/api/transactions/upload`
 * **Content-Type:** `multipart/form-data`
-* **Parâmetros de Corpo (Body):**
-    * `file`: O arquivo de texto (.txt) a ser processado. 
-* **Respostas:**
-    * `200 OK`: "Arquivo processado com sucesso!"
-    * `400 Bad Request`: "Erro ao processar arquivo: [Detalhe do erro]"
+* **Parâmetro (Body):** `file` (Arquivo .txt obrigatório)
 
-### 2. Listar Transações (Relatório)
-Retorna a lista de transações do banco de dados, convertidas para DTO (Data Transfer Object) com os valores monetários e datas já formatados para exibição.
-
-* **Método:** `GET`
-* **URL:** `/api/transactions`
-* **Parâmetros de Consulta (Query Params):**
-    * `inicio`: Data de início para filtro (Formato: `yyyy-MM-dd`). **(Opcional)**
-    * `fim`: Data de fim para filtro (Formato: `yyyy-MM-dd`). **(Opcional)**
+### 2. Listar Transações (Com Filtros)
+* **Método:** `GET` | **URL:** `/api/transactions`
+* **Query Params (Opcionais):**
+    * `inicio`: Data de início (`yyyy-MM-dd`).
+    * `fim`: Data final (`yyyy-MM-dd`).
+    * `bandeira`: Nome da bandeira (`VISA` ou `MASTERCARD`).
 * **Exemplo de Chamada:**
-  `GET /api/transactions?inicio=2018-09-25&fim=2018-09-25`
-* **Exemplo de Resposta (JSON):**
-  ```json
-  [
-    {
-      "loja": "LOJA A",
-      "dataHora": "25/09/2018 às 14:00:00",
-      "valor": "R$ 100,00",
-      "bandeira": "VISA",
-      "nsu": "123456"
-    },
-    {
-      "loja": "LOJA B",
-      "dataHora": "25/09/2018 às 15:30:00",
-      "valor": "R$ 50,00",
-      "bandeira": "MASTERCARD",
-      "nsu": "789012"
-    }
-  ]
+  `GET /api/transactions?inicio=2018-09-25&bandeira=VISA`
 
-## 📂 Estrutura do Projeto
+---
 
-```text
-src/main/java/com/equals/caseequals/
-│
-├── config/       # Configurações globais (ex: CORS)
-├── controller/   # Endpoints da API (Upload e Listagem)
-├── dto/          # Objetos de transferência de dados (Formatados para tela)
-├── exception/    # Tratamento centralizado de erros
-├── model/        # Entidades JPA (Banco de Dados)
-├── repository/   # Interfaces de acesso a dados (Spring Data JPA)
-├── service/      # Regras de negócio
-│   ├── parser/   # Lógica do Strategy Pattern
-│   │   ├── strategy/
-│   │   └── FileProcessorService.java
-├── utils/        # Formatadores de Data e Moeda
-└── CaseEqualsApplication.java
+## 📝 Banco de Dados
+
+O banco de dados PostgreSQL é criado automaticamente pelo Docker.
+* **Tabela:** `transacoes`
+* **Script de Referência:** Veja `src/main/resources/schema.sql` para consultar o DDL utilizado.
+
+---
+**Desenvolvido por Alencar Avelar**
