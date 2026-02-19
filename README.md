@@ -38,9 +38,9 @@ Utilização de `@ControllerAdvice` e `@ExceptionHandler`.
 
 ## 🌟 Funcionalidades
 
-* **Mapeamento Completo (Homologação):** Diferente de uma extração básica, o parser foi configurado para ler e persistir todos os campos do Registro Tipo 1 (Detalhe), incluindo taxas, tarifas, dados de parcelamento e segurança (BIN/CV), permitindo uma auditoria completa do arquivo.
-* **Filtros Dinâmicos:** O relatório permite filtrar as transações pela **Previsão de Pagamento** e por **Bandeira (Visa/Mastercard)**, podendo ser usados em conjunto ou isoladamente. Isso permite análises mais ricas, já que a data de evento costuma ser a mesma para o lote todo, enquanto a previsão de pagamento varia conforme as parcelas.
-* **Tabela Responsiva:** Interface adaptada com barra de rolagem horizontal nativa para visualização confortável de todos os dados extraídos.
+* **Mapeamento Completo (Homologação):** O parser foi configurado para ler e persistir todos os campos do Registro Tipo 1 (Detalhe), permitindo uma auditoria completa do arquivo.
+* **Filtros Dinâmicos:** O relatório permite filtrar as transações pela **Previsão de Pagamento** e por **Bandeira (Visa/Mastercard)**, podendo ser usados em conjunto ou isoladamente.
+
 
 ---
 
@@ -48,23 +48,21 @@ Utilização de `@ControllerAdvice` e `@ExceptionHandler`.
 
 Para garantir que a aplicação se mantenha rápida e responsiva mesmo ao processar e exibir um grande volume de dados, foram aplicadas as seguintes otimizações técnicas:
 
-* **Backend (Indexação no Banco de Dados):** Foram criados Índices (`@Index`) nas colunas `data_prevista_pagamento` e `bandeira` no PostgreSQL. Isso elimina a necessidade de *Table Scans* (leitura linha a linha) durante os filtros, garantindo buscas quase instantâneas.
-* **Frontend (Manipulação Eficiente do DOM):** Ao invés de forçar o navegador a redesenhar a tabela a cada nova linha inserida (o que causaria congelamento da tela), o Javascript processa todas as transações em memória e realiza **uma única atualização do DOM** ao final. Isso permite carregar centenas de registros com dezenas de colunas de forma totalmente fluida.
+* **Backend (Indexação no Banco de Dados):** Foram criados Índices (`@Index`) nas colunas `data_prevista_pagamento` e `bandeira` no PostgreSQL. Isso elimina a necessidade de *Table Scans* (leitura linha a linha) durante os filtros.
+* **Frontend (Manipulação Eficiente do DOM):** Ao invés de forçar o navegador a redesenhar a tabela a cada nova linha inserida, o Javascript processa todas as transações em memória e realiza **uma única atualização do DOM** ao final.
 
 ---
 
 ## 🛠️ Como Executar o Projeto
-
-A aplicação é "Dockerizada", o que significa que você **não precisa** ter Java ou PostgreSQL instalados na sua máquina local. Apenas o Docker é necessário.
 
 ### Pré-requisitos
 * [Docker](https://www.docker.com/) e Docker Compose instalados.
 
 ### Passo a Passo
 
-1.  **Clone o repositório** (ou extraia os arquivos):
+1.  **Clone o repositório** :
     ```bash
-    git clone [https://github.com/AlencarAvelar/caseEquals.git](https://github.com/AlencarAvelar/caseEquals.git)
+    git clone https://github.com/AlencarAvelar/caseEquals.git
     cd CaseEquals
     ```
 
@@ -78,7 +76,17 @@ A aplicação é "Dockerizada", o que significa que você **não precisa** ter J
     Abra o navegador e vá para: **[http://localhost:8080](http://localhost:8080)**
 
 ---
+## 🧪 Como Executar os Testes Unitários
 
+O projeto possui testes focados nas regras de negócio: a correta conversão de texto posicional para objetos financeiros, validando as escalas matemáticas (`BigDecimal`) e o parseamento de datas (`LocalDate`).
+
+
+### Via Terminal (Maven)
+Certifique-se de ter o Maven e o Java 21 instalados localmente. Na raiz do projeto, execute:
+    ```
+    mvn test
+    ```
+---
 ## 🧪 Como Testar
 
 1.  **Upload:**
@@ -112,9 +120,8 @@ A API RESTful responde nos seguintes endpoints:
 
 ## 📝 Banco de Dados
 
-O banco de dados PostgreSQL é criado automaticamente pelo Docker.
+O banco de dados PostgreSQL é criado automaticamente pelo Docker. Utiliza JPA para criacão do banco. 
 * **Tabela:** `transacoes`
-* **Script de Referência:** Veja `src/main/resources/schema.sql` para consultar o DDL utilizado.
-
+* **Script de Referência:** Veja `src/main/resources/schema.sql` 
 ---
-**Desenvolvido por Alencar Avelar**
+**Desenvolvido por Alencar Avelar  - Case técnico Equals**
