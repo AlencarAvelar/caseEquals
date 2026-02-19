@@ -1,11 +1,11 @@
 package com.equals.caseequals.service;
 
+import com.equals.caseequals.exception.FileProcessingException;
 import com.equals.caseequals.model.Transaction;
 import com.equals.caseequals.repository.TransactionRepository;
 import com.equals.caseequals.service.parser.strategy.PaymentStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.equals.caseequals.exception.FileProcessingException;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -21,60 +21,62 @@ public class FileProcessorService {
     @Autowired
     private TransactionRepository repository;
 
-    // O método principal que lê o arquivo
-    public void processFile(InputStream fileStream) {
+    //  retorna um 'int' com a quantidade de transações salvas
+    public int processFile(InputStream fileStream) {
+        int registrosSalvos = 0;
+
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(fileStream))) {
             String line;
-            System.out.println("--- INICIANDO PROCESSAMENTO DO ARQUIVO ---");
-
             while ((line = reader.readLine()) != null) {
-                // Pular linhas vazias
-                if (line.trim().isEmpty()) continue;
+                if (line.trim().isEmpty()) continue; // Pula linhas em branco
 
-                // Log para ver se está lendo
-                // System.out.println("Lendo linha: " + line);
-
-                // Tipo de Registro (Posição 1)
-                char recordType = line.charAt(0);
-
-                // Se for '1', é uma venda (Detalhe)
-                if (recordType == '1') {
-                    System.out.println("Processando venda (Tipo 1)...");
-                    processDetailLine(line);
+                // Se processDetailLine retornar true, incrementa o contador
+                if (processDetailLine(line)) {
+                    registrosSalvos++;
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new FileProcessingException("Erro ao processar arquivo: " + e.getMessage(), e);
+            throw new FileProcessingException("Falha ao ler o arquivo: " + e.getMessage(), e);
         }
+
+
+        if (registrosSalvos == 0) {
+            throw new FileProcessingException("O arquivo foi lido, mas nenhum registro válido de transação foi encontrado. Verifique o layout.");
+        }
+
+        return registrosSalvos;
     }
 
-
-    private void processDetailLine(String line) {
+    // Retorna boolean para sabermos se a linha virou transação ou não
+    private boolean processDetailLine(String line) {
         try {
-            // 1. Identifica a bandeira (Posição 262 a 291 no arquivo -> 261 a 291 no Java)
-            // Se o arquivo for menor que isso, vai dar erro, por isso o try/catch
+            // Regra CNAB: Se a linha for muito curta, pode ser Cabeçalho ou Rodapé. Ignoramos pacificamente.
             if (line.length() < 291) {
-                throw new FileProcessingException("Linha inválida ou corrompida (tamanho incorreto).");
+                return false;
             }
 
-            String rawBrand = line.substring(261, 291);
-            System.out.println("Bandeira identificada na linha: [" + rawBrand.trim() + "]");
+            // Extrai a bandeira (posições 262 a 291 no layout humano)
+            String rawBrand = line.substring(261, 291).trim();
 
-            // 2. Busca a estratégia correta (Visa ou Master)
             PaymentStrategy strategy = strategies.stream()
                     .filter(s -> s.appliesTo(rawBrand))
                     .findFirst()
-                    .orElseThrow(() -> new FileProcessingException("Bandeira não suportada: " + rawBrand));
+                    .orElse(null);
 
-            // 3. Processa e Salva
+            // Se não encontrou a estratégia (ex: bandeira 'Xpto'), ignora a linha ou lança erro.
+            //    ignorar a linha e não salvar.
+            if (strategy == null) {
+                return false;
+            }
+
             Transaction transaction = strategy.processLine(line);
             repository.save(transaction);
 
-            System.out.println("Venda salva com sucesso! ID: " + transaction.getId());
+            return true; // Sucesso!
 
         } catch (Exception e) {
-            throw new FileProcessingException("Erro ao salvar linha: " + e.getMessage(), e);
-        }
+            // Se a linha tem o tamanho certo, mas os dados estão ruins (ex: letras onde devia ter números), ele quebra e avisa.
+            throw new FileProcessingException("Erro ao converter dados da linha. O layout não corresponde ao formato esperado.", e);
         }
     }
+}

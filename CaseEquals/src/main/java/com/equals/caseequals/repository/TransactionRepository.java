@@ -12,13 +12,11 @@ import java.util.List;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
-    // Consulta inteligente:
-    // Se o parâmetro for NULL, ele ignora aquele filtro e traz tudo.
-    // Isso permite filtrar só por data, só por bandeira, ou pelos dois.
+    // Adicionei o CAST para o PostgreSQL entender os tipos mesmo quando forem nulos
     @Query("SELECT t FROM Transaction t WHERE " +
-            "(:inicio IS NULL OR t.dataEvento >= :inicio) AND " +
-            "(:fim IS NULL OR t.dataEvento <= :fim) AND " +
-            "(:bandeira IS NULL OR :bandeira = '' OR UPPER(t.bandeira) = UPPER(:bandeira))")
+            "(CAST(:inicio AS date) IS NULL OR t.dataPrevistaPagamento >= :inicio) AND " +
+            "(CAST(:fim AS date) IS NULL OR t.dataPrevistaPagamento <= :fim) AND " +
+            "(CAST(:bandeira AS text) IS NULL OR :bandeira = '' OR UPPER(t.bandeira) = UPPER(:bandeira))")
     List<Transaction> findByFilters(
             @Param("inicio") LocalDate inicio,
             @Param("fim") LocalDate fim,

@@ -8,7 +8,10 @@ import java.time.LocalTime;
 
 @Data
 @Entity
-@Table(name = "transacoes")
+@Table(name = "transacoes", indexes = {
+        @Index(name = "idx_data_prevista", columnList = "dataPrevistaPagamento"),
+        @Index(name = "idx_bandeira", columnList = "bandeira")
+})
 public class Transaction {
 
     @Id

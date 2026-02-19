@@ -27,12 +27,13 @@ public class TransactionController {
     // Endpoint de Upload
     @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
-        // Se der erro, o GlobalExceptionHandler pega automaticamente.
         try {
-            fileProcessorService.processFile(file.getInputStream());
-            return ResponseEntity.ok("Arquivo processado com sucesso!");
+            // Pega o número de registros processados
+            int count = fileProcessorService.processFile(file.getInputStream());
+
+            // Retorna a mensagem com o contador
+            return ResponseEntity.ok("Sucesso! " + count + " transações foram importadas.");
         } catch (java.io.IOException e) {
-            // converte erro de IO para nossa exceção
             throw new com.equals.caseequals.exception.FileProcessingException("Erro de leitura do arquivo upload", e);
         }
     }
